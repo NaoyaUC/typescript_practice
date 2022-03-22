@@ -137,13 +137,11 @@ class HitAndBrow {
     end(){
         printLine(`正解です! \n試行回数: ${this.tryCount}回`)
         this.reset()
-        // process.exit()
     }
 
     giveup(){
         printLine(`残念でした、正解は[ ${this.answer} ]です\n試行回数: ${this.tryCount}回`);
         this.reset();
-        // process.exit();
     }
 
     private reset(){
@@ -203,16 +201,8 @@ const promptSelect = async <T extends string>(text: string,values: readonly T[])
         printLine(`\n再入力してください`);
         return promptSelect<T>(text,values)
     }
-};
+}
 
-//test
 ;(async()=>{
-    // const hitAndBrow = new HitAndBrow()
-    // await hitAndBrow.setting() //設定開始
-    // await hitAndBrow.play() //この処理が終わるまで操作
-    // hitAndBrow.end() //console end
     new GameProcedure().start()
 })()
-
-
-
