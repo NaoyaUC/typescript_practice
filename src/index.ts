@@ -1,38 +1,17 @@
 
-// type Mode = "normal" | "hard" | "very hard"
 
 const modes = ["normal", "hard","very hard"] as const
 type Mode = typeof modes[number]
 
 class HitAndBrow {
-  //   answerSource: string[];
-  //   answer: string[];
-  //   tryCount: number;
-
-  //   constructor() {
-  //     this.answerSource = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
-  //     this.answer = [];
-  //     this.tryCount = 0; //初期
-  //   }
-
-  //class宣言時の初期値で問題ない
-    private readonly answerSource = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+    //class宣言時の初期値格納
+    private readonly answerSource = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"] //型推論により型必要なし
     private answer: string[] = []; //正解
-    private tryCount = 0
-    // private mode: 'normal' | 'hard'
-    // private mode: 'normal' | 'hard' | 'very hard'
-    // private mode: Mode
-    private mode: Mode = "normal"
+    private tryCount = 0 //型推論により型必要なし
+    private mode: Mode = "normal" //Mode型の中からnormalを設定
 
-    // constructor(mode: Mode){
-    //     this.mode = mode
-    // }
-
-  //関数
+    //関数
     async setting() {
-        // this.mode = (await promptInput("モードを入力してください")) as Mode; //型アサーションによる方解決
-        // this.mode = (await promptSelect("モードを入力してください",['normal','hard','very hard'])) as Mode; //型アサーションによる型解決
-        // this.mode = (await promptSelect<Mode>("モードを入力してください",['normal','hard','very hard'])) //型アサーションによる型解決
         this.mode = (await promptSelect<Mode>("モードを入力してください",modes)) 
 
         //modeによって入力値を変更
@@ -48,10 +27,6 @@ class HitAndBrow {
     }
 
     async play() {
-        // const inputArr = (
-        //     await promptInput("「,」区切りで3つの数字を入力してください")
-        // ).split(",");
-
         const answerLength = this.getAnswerLength()
         const inputArr = (
             await promptInput(
@@ -134,10 +109,8 @@ class HitAndBrow {
             case "very hard":
                 return 5;
             default:
-                // throw new Error(`${this.mode} は無効なモードです`);
                 const neverValue: never = this.mode;
                 throw new Error(`${neverValue} は無効なモードです`); 
-                // Type 'string' is not assignable to type 'never'.
         }
     }
 }
@@ -160,8 +133,6 @@ const readLine = async () => {
     return input.trim();
 };
 
-// const promptSelect = async (text: string,values: readonly string[]): Promise<string> => {
-// const promptSelect = async <T>(text: string,values: readonly T[]): Promise<T> => {
     const promptSelect = async <T extends string>(text: string,values: readonly T[]): Promise<T> => {
     printLine(`\n${text}\n>`);
     //表示
@@ -169,7 +140,6 @@ const readLine = async () => {
         printLine(`- ${value}`);
     })
 
-    // const input = await readLine()
     const input = (await readLine()) as T //Tがstringを継承した型に設定することで解決
     if(values.includes(input)){
         return input
@@ -181,18 +151,10 @@ const readLine = async () => {
 
 //test
 ;(async()=>{
-//     const name = await promptInput("名前を入力しろ")
-//     console.log(name)
-//     const age = await promptInput("年齢を入力しろ");
-//     console.log(age);
-//     process.exit()
-    
-    // const hitAndBrow = new HitAndBrow('hard')
     const hitAndBrow = new HitAndBrow()
-    // const nasme:string = hitAndBrow //割り当てはできない
-    await hitAndBrow.setting() //設定を行う
-    await hitAndBrow.play() //この処理が終わるまで待つ
-    hitAndBrow.end()
+    await hitAndBrow.setting() //設定開始
+    await hitAndBrow.play() //この処理が終わるまで操作
+    hitAndBrow.end() //console end
 })()
 
 
