@@ -1,3 +1,42 @@
+const nextActions = ['play again','exit'] as const
+type NextActions = typeof nextActions[number]
+
+class GameProcedure {
+    private currentGameTitle = "hit and blow"
+    private currentGame = new HitAndBrow() //
+
+    public async start(){
+        await this.play()
+    }
+
+    private async play(){
+        printLine(`============\n${this.currentGameTitle}を開始します\n===========`);
+        await this.currentGame.setting()
+        await this.currentGame.play()
+        //降参判定
+        if (this.currentGame.getJudge()) {
+            this.currentGame.giveup()
+        } else {
+            this.currentGame.end()
+        }
+
+        const action = await promptSelect<NextActions>('ゲームを続けますか？',nextActions);
+
+        if (action === 'exit') {
+            this.end();  
+        }else if (action === 'play again') {
+            await this.play(); //再度あそぶ
+        } else {
+            const neverValue:never = action //到達が期待されていない
+            throw new Error(`${neverValue} is an invalid action`);
+        }
+    }
+
+    private end(){
+        printLine(`ゲームを終了しました`);
+        process.exit();
+    }
+}
 
 
 const modes = ["normal", "hard","very hard"] as const
@@ -9,6 +48,8 @@ class HitAndBrow {
     private answer: string[] = []; //正解
     private tryCount = 0 //型推論により型必要なし
     private mode: Mode = "normal" //Mode型の中からnormalを設定
+
+    private judge = false //降参する場合
 
     //関数
     async setting() {
@@ -24,9 +65,11 @@ class HitAndBrow {
                 this.answer.push(selectedItem);
             }
         }
+
+        printLine("降参する場合は「give up」と入力してください。")
     }
 
-    async play() {
+    async play(){
         const answerLength = this.getAnswerLength()
         const inputArr = (
             await promptInput(
@@ -35,8 +78,9 @@ class HitAndBrow {
         ).split(",");
 
         //giveup
-        if (inputArr[0] === "giveup") {
-            this.giveup()
+        if (inputArr[0] === "give up") {
+            this.judge = true //降参する
+            return
         }
 
         console.log("入力された数値は", inputArr, "です");
@@ -53,6 +97,7 @@ class HitAndBrow {
             this.tryCount += 1;
             await this.play();
         } else {
+            //正解時
             this.tryCount += 1;
         }
     }
@@ -91,12 +136,19 @@ class HitAndBrow {
     //終了
     end(){
         printLine(`正解です! \n試行回数: ${this.tryCount}回`)
-        process.exit()
+        this.reset()
+        // process.exit()
     }
 
     giveup(){
-        printLine(`正解は : ${this.answer}です`);
-        process.exit();
+        printLine(`残念でした、正解は[ ${this.answer} ]です\n試行回数: ${this.tryCount}回`);
+        this.reset();
+        // process.exit();
+    }
+
+    private reset(){
+        this.answer = [] //答えを初期化
+        this.tryCount = 0 //回数を初期化
     }
 
     //mode変更
@@ -112,6 +164,10 @@ class HitAndBrow {
                 const neverValue: never = this.mode;
                 throw new Error(`${neverValue} は無効なモードです`); 
         }
+    }
+
+    getJudge(){
+        return this.judge        
     }
 }
 
@@ -133,7 +189,7 @@ const readLine = async () => {
     return input.trim();
 };
 
-    const promptSelect = async <T extends string>(text: string,values: readonly T[]): Promise<T> => {
+const promptSelect = async <T extends string>(text: string,values: readonly T[]): Promise<T> => {
     printLine(`\n${text}\n>`);
     //表示
     values.forEach((value)=> {
@@ -151,10 +207,11 @@ const readLine = async () => {
 
 //test
 ;(async()=>{
-    const hitAndBrow = new HitAndBrow()
-    await hitAndBrow.setting() //設定開始
-    await hitAndBrow.play() //この処理が終わるまで操作
-    hitAndBrow.end() //console end
+    // const hitAndBrow = new HitAndBrow()
+    // await hitAndBrow.setting() //設定開始
+    // await hitAndBrow.play() //この処理が終わるまで操作
+    // hitAndBrow.end() //console end
+    new GameProcedure().start()
 })()
 
 
