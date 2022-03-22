@@ -1,5 +1,8 @@
 
-type Mode = "normal" | "hard" | "very hard"
+// type Mode = "normal" | "hard" | "very hard"
+
+const modes = ["normal", "hard","very hard"] as const
+type Mode = typeof modes[number]
 
 class HitAndBrow {
   //   answerSource: string[];
@@ -28,7 +31,10 @@ class HitAndBrow {
   //関数
     async setting() {
         // this.mode = (await promptInput("モードを入力してください")) as Mode; //型アサーションによる方解決
-        this.mode = (await promptSelect("モードを入力してください",['normal','hard','very hard'])) as Mode; //型アサーションによる方解決
+        // this.mode = (await promptSelect("モードを入力してください",['normal','hard','very hard'])) as Mode; //型アサーションによる型解決
+        // this.mode = (await promptSelect<Mode>("モードを入力してください",['normal','hard','very hard'])) //型アサーションによる型解決
+        this.mode = (await promptSelect<Mode>("モードを入力してください",modes)) 
+
         //modeによって入力値を変更
         const answerLength = this.getAnswerLength();
 
@@ -154,19 +160,22 @@ const readLine = async () => {
     return input.trim();
 };
 
-const promptSelect = async (text: string,values: readonly string[]): Promise<string> => {
+// const promptSelect = async (text: string,values: readonly string[]): Promise<string> => {
+// const promptSelect = async <T>(text: string,values: readonly T[]): Promise<T> => {
+    const promptSelect = async <T extends string>(text: string,values: readonly T[]): Promise<T> => {
     printLine(`\n${text}\n>`);
     //表示
     values.forEach((value)=> {
         printLine(`- ${value}`);
     })
 
-    const input = await readLine()
+    // const input = await readLine()
+    const input = (await readLine()) as T //Tがstringを継承した型に設定することで解決
     if(values.includes(input)){
         return input
     }else{
         printLine(`\n再入力してください`);
-        return promptSelect(text,values)
+        return promptSelect<T>(text,values)
     }
 };
 
